@@ -43,6 +43,13 @@
 
         .auth-btn { width: 100%; padding: 13px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 15px; font-size: 16px; transition: 0.3s; font-family: inherit; }
         .btn-primary { background: #0f1c2c; color: white; }
+        
+        /* গুগল বাটন স্টাইল */
+        .btn-google { background: white; color: #555; border: 1px solid #ddd; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .btn-google img { width: 18px; }
+        .divider { margin: 15px 0; border-bottom: 1px solid #eee; position: relative; }
+        .divider span { position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: white; padding: 0 10px; color: #888; font-size: 12px; }
+
         .btn-link { background: none; color: #1877F2; font-size: 14px; border: none; cursor: pointer; margin-top: 12px; text-decoration: underline; font-family: inherit; }
         #login-form, #signup-form, #reset-form { display: none; }
         
@@ -116,6 +123,14 @@
                     <i class="fas fa-eye toggle-icon" onclick="togglePassword('login-pass', this)"></i>
                 </div>
                 <button class="auth-btn btn-primary" id="loginSubmit">লগইন</button>
+
+                <div class="divider"><span>অথবা</span></div>
+                
+                <button class="auth-btn btn-google" id="googleLoginBtn">
+                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
+                    Google দিয়ে লগইন
+                </button>
+
                 <button class="btn-link" onclick="showForm('signup')">Register if you don't have an account.</button>
                 <button class="btn-link" onclick="showForm('reset')">Forget password?</button>
             </div>
@@ -233,7 +248,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
-        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut, sendPasswordResetEmail, updateProfile, sendEmailVerification } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut, sendPasswordResetEmail, updateProfile, sendEmailVerification, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCe_CgQLWZND9e5rofK1z4mcnBptrLiZlo",
@@ -246,6 +261,16 @@
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
+        const provider = new GoogleAuthProvider();
+
+        // গুগল সাইন ইন
+        document.getElementById('googleLoginBtn').addEventListener('click', () => {
+            signInWithPopup(auth, provider).then((result) => {
+                console.log("Google Sign-In Success");
+            }).catch((error) => {
+                notify("⚠️ গুগল লগইন ব্যর্থ হয়েছে!", "err");
+            });
+        });
 
         window.togglePassword = (inputId, icon) => {
             const input = document.getElementById(inputId);
@@ -267,7 +292,7 @@
 
         const notify = (msg, type) => {
             const el = document.getElementById('auth-msg');
-            el.innerHTML = msg; // innerHTML used to allow <br> and bold tags
+            el.innerHTML = msg;
             el.style.display = 'block';
             el.style.background = type === 'err' ? '#ffebee' : '#e8f5e9';
             el.style.color = type === 'err' ? '#c62828' : '#2e7d32';
@@ -282,10 +307,9 @@
             createUserWithEmailAndPassword(auth, email, pass).then((res) => {
                 updateProfile(res.user, { displayName: name }).then(() => {
                     sendEmailVerification(res.user).then(() => {
-                        // ভেরিফিকেশন মেসেজ আপডেট
                         notify("<b>সফলভাবে অ্যাকাউন্ট তৈরি হয়েছে!</b><br>আপনার ইমেইলে একটি ভেরিফিকেশন লিঙ্ক পাঠানো হয়েছে। লিঙ্কটি ক্লিক করে ভেরিফাই করুন। <br><i>(ইনবক্সে না পেলে Spam মেসেজে দেখুন)</i>", "success");
                         signOut(auth); 
-                        setTimeout(() => showForm('login'), 8000); // ৮ সেকেন্ড পর লগইন ফর্মে যাবে
+                        setTimeout(() => showForm('login'), 8000); 
                     });
                 });
             }).catch(e => notify("⚠️ রেজিস্ট্রেশন হয়নি! ইমেইল সঠিক কি না বা পাসওয়ার্ড কমপক্ষে ৬ অক্ষর কি না দেখুন।", "err"));
@@ -306,7 +330,8 @@
 
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                if(user.emailVerified) {
+                const isGoogleUser = user.providerData.some(p => p.providerId === 'google.com');
+                if(user.emailVerified || isGoogleUser) {
                     document.getElementById('auth-screen').style.display = 'none';
                     document.getElementById('main-content').style.display = 'flex';
                     document.getElementById('userNameDisplay').innerText = `স্বাগতম, ${user.displayName || 'ইউজার'}`;
