@@ -242,8 +242,12 @@
         <div id="toast">নাম্বারটি কপি করা হয়েছে!</div>
 
         <footer>
-            <p>© 2026 All rights reserved with RJ Foundation</p>
-        </footer>
+    <p>© <span id="displayYear"></span> All rights reserved with RJfoundation</p>
+</footer>
+
+<script>
+    document.getElementById('displayYear').innerText = new Date().getFullYear();
+</script>
     </div>
 
     <script type="module">
