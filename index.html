@@ -409,7 +409,7 @@
                 spinner.style.display = "block";
                 btn.disabled = true;
 
-                fetch("https://script.google.com/macros/s/AKfycbz8bBlSx1Z13f3c5mtp95AW7iNMnIfNPLCCl0B8291KOs495Oy19lKQpax_chb8nzsUuQ/exec", {
+                fetch("https://script.google.com/macros/s/AKfycbzA-AxWUX-M0Av2197Jx15zWLwPHo7goGvP5RW9YMLh6zpNhKDOJp4pJrJUPtNIf2E0ig/exec", {
                     method: 'POST', mode: 'no-cors',
                     body: JSON.stringify({ name: nInp.value, email: document.getElementById('e').value, amount: document.getElementById('a').value, method: document.getElementById('m').value, trx: tInp.value.trim() })
                 }).then(() => {
